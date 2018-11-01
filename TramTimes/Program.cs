@@ -16,15 +16,21 @@
         static void Main(string[] args)
         {
             MainPath = args[0];
-            Timer_Elapsed(null, null);
-            var timer = new System.Timers.Timer(180000);
-            timer.Elapsed += Timer_Elapsed;
-            timer.AutoReset = true;
+            int intervalSeconds = int.Parse(args[1]);
+            DownloadAndSaveOnce(null, null);
+            var timer = new System.Timers.Timer(intervalSeconds * 1000) { AutoReset = true,};
+            timer.Elapsed += DownloadAndSaveOnce;
             timer.Start();
-            while (true);
+            Console.CancelKeyPress += ExitApp;
+            while (true)
+            {
+                Console.ReadKey();
+            }
         }
 
-        private static async void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        private static void ExitApp(object sender, ConsoleCancelEventArgs e) => Environment.Exit(0);
+
+        private static async void DownloadAndSaveOnce(object sender, System.Timers.ElapsedEventArgs e)
         {
             var ticks = DateTime.Now.Ticks;
             var directory = System.IO.Directory.CreateDirectory(System.IO.Path.Combine(MainPath, $"time_{ticks}"));
