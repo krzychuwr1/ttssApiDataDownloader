@@ -15,6 +15,11 @@
 
         static void Main(string[] args)
         {
+            foreach(var arg in args)
+            {
+                Console.WriteLine(arg);
+            }
+
             MainPath = args[0];
             int intervalSeconds = int.Parse(args[1]);
             DownloadAndSaveOnce(null, null);
@@ -131,11 +136,10 @@
                 }
                 catch (Exception e)
                 {
-                    retries++;
-                    Debug.WriteLine(e.Message);
-                    if(retries > 10)
+                    Console.WriteLine(e.Message);
+                    if(retries > 20)
                     {
-                        throw new ApplicationException($"Request failed 10 times: {e.Message}");
+                        await System.IO.File.AppendAllTextAsync(System.IO.Path.Combine(MainPath, $"error.log"), $"Request failed 20 times: {e.Message}");
                     }
                 }
             }
