@@ -90,13 +90,31 @@
 
         private static async Task<Dictionary<(string tripId, string vehicleId), (TripInfoResponse deserialized, string json)>> GetTripPassages(List<Vehicle> vehicles)
         {
-            var tripInfoResponses = await Task.WhenAll(from vehicle in vehicles select GetTripPassages(vehicle.TripId, vehicle.Id));
+            //var tripInfoResponses = await Task.WhenAll(from vehicle in vehicles select GetTripPassages(vehicle.TripId, vehicle.Id));
+
+            var tripInfoResponses = new List<(string tripId, string vehicleId, TripInfoResponse tripInfoResponse, string json)>();
+
+            foreach (var vehicle in vehicles)
+            {
+                tripInfoResponses.Add(await GetTripPassages(vehicle.TripId, vehicle.Id));
+            }
 
             return tripInfoResponses.Where(r => r.tripInfoResponse != null).ToDictionary(k => (k.tripId, k.vehicleId), k => (k.tripInfoResponse, k.json));
         }
 
-        private static async Task<IEnumerable<(string stopId, StopPassagesResponse stops, string json)>> GetStopPassages(IEnumerable<StopElement> stops) 
-            => await Task.WhenAll(from stop in stops select GetStopPassages(stop.ShortName.ToString()));
+        private static async Task<IEnumerable<(string stopId, StopPassagesResponse stops, string json)>> GetStopPassages(IEnumerable<StopElement> stops)
+        {
+            //return await Task.WhenAll(from stop in stops select GetStopPassages(stop.ShortName.ToString()));
+
+            var stopPassages = new List<(string stopId, StopPassagesResponse stops, string json)>();
+
+            foreach(var stop in stops)
+            {
+                stopPassages.Add(await GetStopPassages(stop.ShortName.ToString()));
+            }
+
+            return stopPassages;
+        }
 
         static async Task<(VehicleResponse vehicles, string json)> GetVehicles() 
             => await GetAsync<VehicleResponse>("http://www.ttss.krakow.pl/internetservice/geoserviceDispatcher/services/vehicleinfo/vehicles");
@@ -117,7 +135,18 @@
         }
 
         private static async Task<IEnumerable<(string routeId, RouteInfoResponse routeInfos, string json)>> GetRouteStops(IEnumerable<string> routeIds)
-            => await Task.WhenAll(from routeId in routeIds select GetRouteInfoResponse(routeId));
+        {
+            //return await Task.WhenAll(from routeId in routeIds select GetRouteInfoResponse(routeId));
+
+            var routeInfos = new List<(string routeId, RouteInfoResponse routeInfos, string json)>();
+
+            foreach (var routeId in routeIds)
+            {
+                routeInfos.Add(await GetRouteInfoResponse(routeId));
+            }
+
+            return routeInfos;
+        }
 
         static async Task<(string routeId, RouteInfoResponse routeInfoResponse, string json)> GetRouteInfoResponse(string routeId)
         {
