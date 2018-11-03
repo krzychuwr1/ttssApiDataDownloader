@@ -40,11 +40,21 @@
             var ticks = DateTime.Now.Ticks;
             var directory = System.IO.Directory.CreateDirectory(System.IO.Path.Combine(MainPath, $"time_{ticks}"));
             var (stops, stopsJson) = await GetStopsAsync();
-            var stopPassages = (await GetStopPassages(stops.Stops)).ToList();
+            if(stops == null)
+            {
+                await LogError($"Couldn't download stops, cancelling download for tick {ticks}");
+                return;
+            }
+            var stopPassages = (await GetStopPassages(stops.Stops)).Where(s => s.stops != null).ToList();
             var (vehicles, vehiclesJson) = await GetVehicles();
+            if (vehicles == null)
+            {
+                await LogError($"Couldn't download vehicles, cancelling download for tick {ticks}");
+                return;
+            }
             var tripPassages = (await GetTripPassages(vehicles.Vehicles.Where(v => !string.IsNullOrWhiteSpace(v.TripId) && !string.IsNullOrWhiteSpace(v.Id)).ToList()));
             var routeIds = stopPassages.Select(s => s.stops).SelectMany(s => s.Routes).Select(s => s.Id).Distinct();
-            var routes = await GetRouteStops(routeIds);
+            var routes = (await GetRouteStops(routeIds)).Where(r => r.routeInfos != null);
 
             var stopPassagesDirectory = System.IO.Directory.CreateDirectory(System.IO.Path.Combine(directory.FullName, "stopPassages"));
             var tripPassagesDirectory = System.IO.Directory.CreateDirectory(System.IO.Path.Combine(directory.FullName, "tripPassages"));
@@ -82,7 +92,7 @@
         {
             var tripInfoResponses = await Task.WhenAll(from vehicle in vehicles select GetTripPassages(vehicle.TripId, vehicle.Id));
 
-            return tripInfoResponses.ToDictionary(k => (k.tripId, k.vehicleId), k => (k.tripInfoResponse, k.json));
+            return tripInfoResponses.Where(r => r.tripInfoResponse != null).ToDictionary(k => (k.tripId, k.vehicleId), k => (k.tripInfoResponse, k.json));
         }
 
         private static async Task<IEnumerable<(string stopId, StopPassagesResponse stops, string json)>> GetStopPassages(IEnumerable<StopElement> stops) 
@@ -137,13 +147,20 @@
                 catch (Exception e)
                 {
                     retries++;
-                    Console.WriteLine(e.Message);
+                    var message = $"{path}{Environment.NewLine}{e.Message}";
+                    Console.WriteLine(message);
                     if(retries > 20)
                     {
-                        await System.IO.File.AppendAllTextAsync(System.IO.Path.Combine(MainPath, $"error.log"), $"Request failed 20 times: {e.Message}");
+                        await LogError($"Request failed 20 times: {Environment.NewLine} {message}");
+                        return (default(T), null);
                     }
                 }
             }
+        }
+
+        private static async Task LogError(string message)
+        {
+            await System.IO.File.AppendAllTextAsync(System.IO.Path.Combine(MainPath, $"error.log"), $"{message} {Environment.NewLine}{Environment.NewLine}");
         }
     }
 }
