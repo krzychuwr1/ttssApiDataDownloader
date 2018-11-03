@@ -136,6 +136,7 @@
                 }
                 catch (Exception e)
                 {
+                    retries++;
                     Console.WriteLine(e.Message);
                     if(retries > 20)
                     {
