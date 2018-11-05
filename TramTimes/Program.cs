@@ -12,6 +12,7 @@
     class Program
     {
         static string MainPath;
+        static string domain = "http://localhost:8080";
 
         static void Main(string[] args)
         {
@@ -99,20 +100,20 @@
             => await Task.WhenAll(from stop in stops select GetStopPassages(stop.ShortName.ToString()));
 
         static async Task<(VehicleResponse vehicles, string json)> GetVehicles() 
-            => await GetAsync<VehicleResponse>("http://www.ttss.krakow.pl/internetservice/geoserviceDispatcher/services/vehicleinfo/vehicles");
+            => await GetAsync<VehicleResponse>(domain + "/internetservice/geoserviceDispatcher/services/vehicleinfo/vehicles");
 
         static async Task<(StopsResponse stops, string json)> GetStopsAsync() 
-            => await GetAsync<StopsResponse>("http://www.ttss.krakow.pl/internetservice/geoserviceDispatcher/services/stopinfo/stops?left=-648000000&bottom=-324000000&right=648000000&top=324000000");
+            => await GetAsync<StopsResponse>(domain + "/internetservice/geoserviceDispatcher/services/stopinfo/stops?left=-648000000&bottom=-324000000&right=648000000&top=324000000");
 
         static async Task<(string stopId, StopPassagesResponse stopPassages, string json)> GetStopPassages(string stopId)
         {
-            var (deserialized, rawJson) = await GetAsync<StopPassagesResponse>($"http://www.ttss.krakow.pl/internetservice/services/passageInfo/stopPassages/stop?stop={stopId}");
+            var (deserialized, rawJson) = await GetAsync<StopPassagesResponse>($"{domain}/internetservice/services/passageInfo/stopPassages/stop?stop={stopId}");
             return (stopId, deserialized, rawJson);
         }
 
         static async Task<(string tripId, string vehicleId, TripInfoResponse tripInfoResponse, string json)> GetTripPassages(string tripId, string vehicleId)
         {
-            var (deserialized, rawJson) = await GetAsync<TripInfoResponse>($"http://www.ttss.krakow.pl/internetservice/services/tripInfo/tripPassages?tripId={tripId}&vehicleId={vehicleId}");
+            var (deserialized, rawJson) = await GetAsync<TripInfoResponse>($"{domain}/internetservice/services/tripInfo/tripPassages?tripId={tripId}&vehicleId={vehicleId}");
             return (tripId, vehicleId, deserialized, rawJson);
         }
 
@@ -121,7 +122,7 @@
 
         static async Task<(string routeId, RouteInfoResponse routeInfoResponse, string json)> GetRouteInfoResponse(string routeId)
         {
-            var (deserialized, rawJson) = await GetAsync<RouteInfoResponse>($"http://www.ttss.krakow.pl/internetservice/services/routeInfo/routeStops?routeId={routeId}");
+            var (deserialized, rawJson) = await GetAsync<RouteInfoResponse>($"{domain}/internetservice/services/routeInfo/routeStops?routeId={routeId}");
             return (routeId, deserialized, rawJson);
         }
         
