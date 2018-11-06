@@ -5,10 +5,14 @@ import os
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from timeit import default_timer
+from datetime import datetime
 
 import requests
 
-main_dir = '/media/toshiba/ed/data/time_%s' % (int(default_timer() * 100000000))
+def ticks(dt):
+    return (dt - datetime(1, 1, 1)).total_seconds() * 10000000
+
+main_dir = '/media/toshiba/ed/data/time_%s' % int(ticks(datetime.utcnow()))
 
 def get_all_route_ids():
     filenames = os.listdir(os.path.join(main_dir, 'stopPassages'))
