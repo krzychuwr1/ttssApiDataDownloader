@@ -53,45 +53,57 @@ async def get_data_asynchronous(url_filenames):
                 pass
 
 def main():
+    logging.basicConfig(
+        format='[%(levelname)s][%(asctime)s] %(message)s',
+        filename='main.log',
+        level=logging.INFO)
+            
+    try:
+        os.mkdir(main_dir)
+    except:
+        pass
+    try:
+        os.mkdir(os.path.join(main_dir, 'stopPassages'))
+    except:
+        pass
+    try:
+        os.mkdir(os.path.join(main_dir, 'tripPassages'))
+    except:
+        pass
+    try:
+        os.mkdir(os.path.join(main_dir, 'routeStops'))
+    except:
+        pass
+
+    START_TIME = default_timer()
+
     for _ in range(0, 10):
         try:
-            logging.basicConfig(
-                format='[%(levelname)s][%(asctime)s] %(message)s',
-                filename='main.log',
-                level=logging.INFO)
-            
-            try:
-                os.mkdir(main_dir)
-            except:
-                pass
-            try:
-                os.mkdir(os.path.join(main_dir, 'stopPassages'))
-            except:
-                pass
-            try:
-                os.mkdir(os.path.join(main_dir, 'tripPassages'))
-            except:
-                pass
-            try:
-                os.mkdir(os.path.join(main_dir, 'routeStops'))
-            except:
-                pass
-
-            START_TIME = default_timer()
-
             stops = json.loads(requests.get('http://www.ttss.krakow.pl/internetservice/geoserviceDispatcher/services/stopinfo/stops?left=-648000000&bottom=-324000000&right=648000000&top=324000000').content)
             with open(os.path.join(main_dir, 'stops.json'), 'w') as f:
                 f.write(json.dumps(stops))
             stops = stops['stops']
             print("After stops time: %s" % (default_timer() - START_TIME))
+        except Exception as e:
+            logging.error(e)
+        else:
+            break
 
+    for _ in range(0, 10):
+        try:
             vehicles = json.loads(requests.get('http://www.ttss.krakow.pl/internetservice/geoserviceDispatcher/services/vehicleinfo/vehicles').content)
             with open(os.path.join(main_dir, 'vehicles.json'), 'w') as f:
                 f.write(json.dumps(vehicles))
             vehicles = vehicles['vehicles']
             vehicles = [v for v in vehicles if 'isDeleted' not in v or v['isDeleted'] == False]
             print("After vehicles time: %s" % (default_timer() - START_TIME))
+        except Exception as e:
+            logging.error(e)
+        else:
+            break
 
+    for _ in range(0, 10):
+        try:
             stopPassagesUrlFilenames = [
                 ('http://www.ttss.krakow.pl/internetservice/services/passageInfo/stopPassages/stop?stop=%s' % s['shortName'],
                  os.path.join(main_dir, 'stopPassages', 'stopPassages_%s.json' % s['shortName'])) for s in stops]
@@ -100,6 +112,13 @@ def main():
             loop.run_until_complete(future)
             print("After stopPassages time: %s" % (default_timer() - START_TIME))
 
+        except Exception as e:
+            logging.error(e)
+        else:
+            break
+
+    for _ in range(0, 10):
+        try:
             tripPassagesUrlFilenames = [
                 ('http://www.ttss.krakow.pl/internetservice/services/tripInfo/tripPassages?tripId=%s&vehicleId=%s' % (v['tripId'], v['id']),
                  os.path.join(main_dir, 'tripPassages', 'tripPassages_%s_%s.json' % (v['tripId'], v['id']))) for v in vehicles]
@@ -107,7 +126,13 @@ def main():
             future = asyncio.ensure_future(get_data_asynchronous(tripPassagesUrlFilenames))
             loop.run_until_complete(future)
             print("After tripPassages time: %s" % (default_timer() - START_TIME))
+        except Exception as e:
+            logging.error(e)
+        else:
+            break
 
+    for _ in range(0, 10):
+        try:
             routeStopsUrlFilenames = [
                 ('http://www.ttss.krakow.pl/internetservice/services/routeInfo/routeStops?routeId=%s' % id,
                  os.path.join(main_dir, 'routeStops', 'routeStops_%s.json' % id)) for id in get_all_route_ids()]
