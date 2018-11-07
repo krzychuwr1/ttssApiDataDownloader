@@ -59,11 +59,24 @@ def main():
                 format='[%(levelname)s][%(asctime)s] %(message)s',
                 filename='main.log',
                 level=logging.INFO)
+            
+            try:
+                os.mkdir(main_dir)
+            except:
+                pass
+            try:
+                os.mkdir(os.path.join(main_dir, 'stopPassages'))
+            except:
+                pass
+            try:
+                os.mkdir(os.path.join(main_dir, 'tripPassages'))
+            except:
+                pass
+            try:
+                os.mkdir(os.path.join(main_dir, 'routeStops'))
+            except:
+                pass
 
-            os.mkdir(main_dir)
-            os.mkdir(os.path.join(main_dir, 'stopPassages'))
-            os.mkdir(os.path.join(main_dir, 'tripPassages'))
-            os.mkdir(os.path.join(main_dir, 'routeStops'))
             START_TIME = default_timer()
 
             stops = json.loads(requests.get('http://www.ttss.krakow.pl/internetservice/geoserviceDispatcher/services/stopinfo/stops?left=-648000000&bottom=-324000000&right=648000000&top=324000000').content)
