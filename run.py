@@ -13,6 +13,7 @@ def ticks(dt):
     return (dt - datetime(1, 1, 1)).total_seconds() * 10000000
 
 main_dir = '/media/toshiba/ed/data/time_%s' % int(ticks(datetime.utcnow()))
+# main_dir = '/home/karol/ed/data/time_%s' % int(ticks(datetime.utcnow()))
 
 def get_all_route_ids():
     filenames = os.listdir(os.path.join(main_dir, 'stopPassages'))
@@ -54,7 +55,11 @@ async def get_data_asynchronous(url_filenames):
 def main():
     for _ in range(0, 10):
         try:
-            logging.basicConfig(filename='main.log', level=logging.INFO)
+            logging.basicConfig(
+                format='[%(levelname)s][%(asctime)s] %(message)s',
+                filename='main.log',
+                level=logging.INFO)
+
             os.mkdir(main_dir)
             os.mkdir(os.path.join(main_dir, 'stopPassages'))
             os.mkdir(os.path.join(main_dir, 'tripPassages'))
