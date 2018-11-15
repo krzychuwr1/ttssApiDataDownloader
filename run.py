@@ -12,8 +12,8 @@ import requests
 def ticks(dt):
     return (dt - datetime(1, 1, 1)).total_seconds() * 10000000
 
-main_dir = '/media/toshiba/ed/data/time_%s' % int(ticks(datetime.utcnow()))
-# main_dir = '/home/karol/ed/data/time_%s' % int(ticks(datetime.utcnow()))
+# main_dir = '/media/toshiba/ed/data/time_%s' % int(ticks(datetime.utcnow()))
+main_dir = '/home/karol/ed/data/time_%s' % int(ticks(datetime.utcnow()))
 
 def get_all_route_ids():
     filenames = os.listdir(os.path.join(main_dir, 'stopPassages'))
