@@ -1,21 +1,25 @@
-#run this script inside ed directory to conwert row data to csv
-
 import os
 import json
-import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import datetime
 from time import time
+from datetime import datetime, timedelta
 
 start_time = time()
 
-root_dir = '/home/karol/ed/data'
+root_dir = '/media/toshiba/ed/data'
+
+tram_delays = []
+
+time_dir_names = os.listdir(root_dir)
+
+print('Times to process = ', len(time_dir_names))
 
 idx = 0
 for time_dir_name in time_dir_names:
     dir_dt = datetime(1, 1, 1) + timedelta(microseconds=int(time_dir_name.split('_')[-1])/10)
     idx = idx + 1
-    if idx % (len(time_dir_names)/5) == 1:
+    if idx % (len(time_dir_names)/1000) == 1:
         print(100 * idx / len(time_dir_names), '%')
     try:
         stopPassages_path = os.path.join(root_dir, time_dir_name, 'stopPassages')
@@ -49,4 +53,4 @@ for time_dir_name in time_dir_names:
 
 tram_delays_df = pd.DataFrame(tram_delays, columns=['vehicleId', 'direction', 'patternText', 'tripId', 'stopName', 'time', 'day_of_week', 'delay', ])
        
-tram_delays_df.to_csv('tram_delays.csv')
+tram_delays_df.to_csv(os.path.join(os.path.dir_name(root_dir), 'tram_delays.csv'))
