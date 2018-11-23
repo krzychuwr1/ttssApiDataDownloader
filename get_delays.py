@@ -1,3 +1,5 @@
+#run this script inside ed directory to conwert row data to csv
+
 import os
 import json
 import matplotlib.pyplot as plt
@@ -9,30 +11,35 @@ start_time = time()
 
 root_dir = '/home/karol/ed/data'
 
-tram_delays = []
-
-time_dir_names = os.listdir(root_dir)
-
-print('Times to process = ', len(time_dir_names))
-
+idx = 0
 for time_dir_name in time_dir_names:
+    dir_dt = datetime(1, 1, 1) + timedelta(microseconds=int(time_dir_name.split('_')[-1])/10)
+    idx = idx + 1
+    if idx % (len(time_dir_names)/5) == 1:
+        print(100 * idx / len(time_dir_names), '%')
     try:
         stopPassages_path = os.path.join(root_dir, time_dir_name, 'stopPassages')
         stopPassages_file_names = os.listdir(stopPassages_path)
         for file_name in stopPassages_file_names:
             try:
                 file_path = os.path.join(stopPassages_path, file_name)
-                with open(file_path) as f:
+                with open(file_path, encoding="utf8") as f:
                     file_content = f.read()
                     stopPassage_dict = json.loads(file_content)
+                    stopName = stopPassage_dict['stopName']
                     stoppings = [s for s in stopPassage_dict['actual'] if s['status'] == 'STOPPING']
                     for stopping in stoppings:
                         try:
                             actual_dt = datetime.strptime(stopping['actualTime'], '%H:%M')
                             planned_dt = datetime.strptime(stopping['plannedTime'], '%H:%M')
                             tram_delays.append({'vehicleId': stopping['vehicleId'],
+                                                'direction': stopping['direction'],
+                                                'patternText': stopping['patternText'],
+                                                'tripId': stopping['tripId'],
+                                                'stopName': stopName,
                                                 'delay': int((actual_dt - planned_dt).seconds / 60),
-                                                'time': actual_dt.time()})
+                                                'time': actual_dt.time(),
+                                                'day_of_week': dir_dt.weekday()})
                         except Exception as e:
                             print(e)
             except Exception as e:
@@ -40,23 +47,6 @@ for time_dir_name in time_dir_names:
     except Exception as e:
         print(e)
 
-tram_delays = pd.DataFrame(tram_delays, columns=['vehicleId', 'time', 'delay'])
-
-tram_delays.to_csv('tram_delays.csv')
-tram_delays = pd.DataFrame.from_csv('tram_delays.csv')
-
-print(tram_delays.head(10).to_string())
-
-selected_trams = tram_delays.query('vehicleId in ["6352185295672181187", "6352185295672181367", "6352185295672181042", "6352185295672181169"]')
-
-print('Processing time = ', time() - start_time)
-
-fig, ax = plt.subplots(4)
-
-idx = 0
-for key, grp in selected_trams.groupby(['vehicleId']):
-    grp.plot(ax=ax[idx], style='.-', x='time', y='delay', color='b', label=key)
-    idx += 1
-
-print('Total time = ', time() - start_time)
-plt.show()
+tram_delays_df = pd.DataFrame(tram_delays, columns=['vehicleId', 'direction', 'patternText', 'tripId', 'stopName', 'time', 'day_of_week', 'delay', ])
+       
+tram_delays_df.to_csv('tram_delays.csv')
