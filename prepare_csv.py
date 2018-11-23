@@ -8,8 +8,6 @@ start_time = time()
 
 root_dir = '/home/karol/ed/data'
 
-tram_delays = []
-
 time_dir_names = os.listdir(root_dir)
 
 print('Times to process = ', len(time_dir_names))
@@ -19,8 +17,9 @@ prev_stops_count = 5
 idx = 0
 nr = 0
 
-time_dir_name_chunks = [time_dir_names[x:x+10000] for x in range(0, len(time_dir_names), 100)]
+time_dir_name_chunks = [time_dir_names[x:x+10000] for x in range(0, len(time_dir_names), 10000)]
 for time_dir_name_chunk in time_dir_name_chunks:
+    tram_delays = []
     for time_dir_name in time_dir_name_chunk:
         dir_dt = datetime(1, 1, 1) + timedelta(microseconds=int(time_dir_name.split('_')[-1])/10)
         idx = idx + 1
