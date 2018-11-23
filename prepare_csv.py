@@ -20,8 +20,8 @@ idx = 0
 nr = 0
 
 time_dir_name_chunks = [time_dir_names[x:x+10000] for x in range(0, len(time_dir_names), 100)]
-for time_dir_names in time_dir_name_chunks:
-    for time_dir_name in time_dir_names:
+for time_dir_name_chunk in time_dir_name_chunks:
+    for time_dir_name in time_dir_name_chunk:
         dir_dt = datetime(1, 1, 1) + timedelta(microseconds=int(time_dir_name.split('_')[-1])/10)
         idx = idx + 1
         if idx % int(len(time_dir_names)/100) == 1:
