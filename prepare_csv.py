@@ -8,7 +8,7 @@ start_time = time()
 
 root_dir = '/home/karol/ed/data'
 
-time_dir_names = os.listdir(root_dir)
+time_dir_names = list(sorted(os.listdir(root_dir)))
 
 print('Times to process = ', len(time_dir_names))
 
